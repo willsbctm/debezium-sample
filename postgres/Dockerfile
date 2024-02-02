@@ -1,0 +1,18 @@
+FROM migrate/migrate AS base
+
+WORKDIR /app
+
+ARG POSTGRES_USER
+
+ARG POSTGRES_PASSWORD
+
+ARG POSTGRES_HOST
+
+ARG POSTGRES_DATABASE
+
+COPY . /app
+
+FROM base as migrate
+
+ENTRYPOINT migrate -path ./migrations -database postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@$POSTGRES_HOST:5432/$POSTGRES_DATABASE?sslmode=disable up
+

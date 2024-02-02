@@ -1,0 +1,69 @@
+version: "3"
+services:
+
+  database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_PASSWORD: db_password
+      POSTGRES_USER: db_user
+      POSTGRES_DB: sample-db
+    ports:
+      - "5432:5432"
+    command: postgres -c wal_level=logical
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U db_user -d sample-db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - network
+
+  migrate-up:
+    build: ./postgres
+    volumes:
+      - ./postgres/migrations:/migrations
+    environment:
+      POSTGRES_USER: db_user
+      POSTGRES_PASSWORD: db_password
+      POSTGRES_HOST: database
+      POSTGRES_DATABASE: sample-db
+    depends_on:
+      database:
+        condition: service_healthy
+    networks:
+      - network
+
+  pubsub:
+    image: willsbctm/pubsub-emulator-admin
+    ports:
+      - "8003:8000"
+      - "8085:80"
+      - "8432:8432"
+    healthcheck:
+      test: curl -f http://localhost:8000/api/topics || exit 1
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - network
+
+  debezium-server:
+    image: quay.io/debezium/server:2.2
+    container_name: debezium-server
+    ports:
+      - "8088:8080"
+    environment:
+      PUBSUB_EMULATOR_HOST: pubsub:8432
+    volumes:
+      - ./debezium:/debezium/conf
+    depends_on:
+      database:
+        condition: service_healthy
+      pubsub:
+        condition: service_healthy
+    networks:
+      - network
+
+networks:
+  network:
+    driver: bridge
