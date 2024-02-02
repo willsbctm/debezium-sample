@@ -1,0 +1,6 @@
+@PubsubApp.Api_HostAddress = http://localhost:5019
+
+GET {{PubsubApp.Api_HostAddress}}/outbox
+Accept: application/json
+
+###
