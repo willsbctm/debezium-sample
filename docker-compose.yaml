@@ -64,6 +64,28 @@ services:
     networks:
       - network
 
+  api:
+    build: ./app/PubsubApp.Api
+    ports:
+      - "8009:8080"
+    depends_on:
+      database:
+        condition: service_healthy
+      pubsub:
+        condition: service_healthy
+    networks:
+      - network
+
+  worker:
+    build: ./app/PubsubApp.Worker
+    depends_on:
+      database:
+        condition: service_healthy
+      pubsub:
+        condition: service_healthy
+    networks:
+      - network
+
 networks:
   network:
     driver: bridge
