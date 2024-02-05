@@ -1,6 +1,6 @@
 # Exemplo Debezium
 
-Exemplo de debezium com pubsub e postgres para aplicação do outbox pattern
+Exemplo de debezium com pubsub e postgres para aplicação do [outbox pattern](https://microservices.io/patterns/data/transactional-outbox.html)
 
 ## Estrutura
 
