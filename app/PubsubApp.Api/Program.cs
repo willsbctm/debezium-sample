@@ -44,7 +44,7 @@ app.MapPost("/outbox", async (IConfiguration configuration, ILogger<Program> log
         Data = JsonSerializer.Serialize(new { 
             Date = DateTime.Now
         }),
-        Type = "Event"
+        Type = "meu-topico"
     };
     var sql = "INSERT INTO outbox (id, data, type) VALUES (@Id, CAST(@Data AS jsonb), @Type)";
     await connection.ExecuteAsync(sql, outbox);
