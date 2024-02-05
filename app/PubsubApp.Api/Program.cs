@@ -35,6 +35,7 @@ app.MapPost("/outbox", async (IConfiguration configuration, ILogger<Program> log
 {
     logger.LogInformation("Creating outbox itens");
     var connectionString = configuration.GetConnectionString("Sample");
+    var type = configuration.GetValue<string>("Type");
 
     await using var connection = new NpgsqlConnection(connectionString);
 
@@ -44,7 +45,7 @@ app.MapPost("/outbox", async (IConfiguration configuration, ILogger<Program> log
         Data = JsonSerializer.Serialize(new { 
             Date = DateTime.Now
         }),
-        Type = "meu-topico"
+        Type = type
     };
     var sql = "INSERT INTO outbox (id, data, type) VALUES (@Id, CAST(@Data AS jsonb), @Type)";
     await connection.ExecuteAsync(sql, outbox);
@@ -61,16 +62,8 @@ app.MapDelete("/outbox", async (IConfiguration configuration, ILogger<Program> l
 
     await using var connection = new NpgsqlConnection(connectionString);
 
-    var outbox = new Outbox
-    {
-        Id = Guid.NewGuid(),
-        Data = JsonSerializer.Serialize(new { 
-            Date = DateTime.Now
-        }),
-        Type = "Event"
-    };
-    var sql = "DELETE * FROM outbox";
-    await connection.ExecuteAsync(sql, outbox);
+    var sql = "DELETE FROM outbox";
+    await connection.ExecuteAsync(sql);
 
     return Results.NoContent();
 })

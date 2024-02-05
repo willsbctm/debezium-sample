@@ -54,9 +54,12 @@ curl -X GET http://localhost:8009/outbox
 
 Para verificar o envio da mensagem para o pubsub é necessário olhar os logs do container do worker
 
-# Referências
+## Referências
 
 - Ótima referência para aprendizado pode ser encontrada nesse [artigo](https://eskelsen.medium.com/aplicando-transactional-outbox-pattern-com-debezium-postgresql-e-gcp-pub-sub-para-eliminar-a4b9f858416c) brasileiro.
 
 - [Outbox Event Roter](https://debezium.io/documentation/reference/stable/transformations/outbox-event-router.html)
 
+- [Pubsub sink](https://debezium.io/documentation/reference/2.5/operations/debezium-server.html#_google_cloud_pubsub)
+
+- [Connector](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-connector-properties)

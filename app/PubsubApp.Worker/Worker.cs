@@ -6,15 +6,16 @@ public class Worker : BackgroundService
 {
     private readonly ILogger<Worker> _logger;
     private readonly SubscriberClientBuilder _subscriber;
-    private const string _project = "test-project";
-    private const string _subscription = "meu-topico-sub";
 
-    public Worker(ILogger<Worker> logger)
+    public Worker(ILogger<Worker> logger, IConfiguration configuration)
     {
+        var project = configuration.GetValue<string>("GcpProject");
+        var subscription = $"{configuration.GetValue<string>("TopicName")}-sub";
+
         _logger = logger;
         _subscriber = new SubscriberClientBuilder
         {
-            SubscriptionName = new SubscriptionName(_project, _subscription),
+            SubscriptionName = new SubscriptionName(project, subscription),
             EmulatorDetection = Google.Api.Gax.EmulatorDetection.EmulatorOrProduction
         };
     }
@@ -23,6 +24,7 @@ public class Worker : BackgroundService
     {
         while (!stoppingToken.IsCancellationRequested)
         {
+            _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
             var subscriber = await _subscriber.BuildAsync(stoppingToken);
             await subscriber.StartAsync((message, token) => {
                 try
@@ -40,11 +42,6 @@ public class Worker : BackgroundService
                     return Task.FromResult(SubscriberClient.Reply.Ack);
                 }
             });
-            if (_logger.IsEnabled(LogLevel.Information))
-            {
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
-            }
-            await Task.Delay(1000, stoppingToken);
         }
     }
 }

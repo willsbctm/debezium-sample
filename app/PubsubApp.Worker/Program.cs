@@ -4,12 +4,13 @@ using System.Text.Json;
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddHostedService<Worker>();
 
-var pubsubApi = "http://pubsub:8000/api";
+var topicName = builder.Configuration.GetValue<string>("TopicName");
+var pubsubApi = builder.Configuration.GetValue<string>("PubsubApiUrl");
 try
 {
     using var client = new HttpClient();
     await client.PostAsync($"{pubsubApi}/topics", new StringContent(JsonSerializer.Serialize(new {
-        name= "meu-topico"
+        name= topicName
     })));
 }
 catch(Exception ex)
@@ -19,8 +20,8 @@ catch(Exception ex)
 try
 {
     using var client = new HttpClient();
-    await client.PostAsync($"{pubsubApi}/topics/meu-topico/subscriptions", new StringContent(JsonSerializer.Serialize(new {
-        name= "meu-topico-sub"
+    await client.PostAsync($"{pubsubApi}/topics/{topicName}/subscriptions", new StringContent(JsonSerializer.Serialize(new {
+        name= $"{topicName}-sub"
     })));
 }
 catch(Exception ex)
