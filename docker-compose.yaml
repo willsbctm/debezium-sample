@@ -68,7 +68,7 @@ services:
       - "8009:8080"
     environment:
       ConnectionStrings__Sample: "Server=database;Port=5432;Database=sample-db;Userid=db_user;Password=db_password;"
-      Type: tutorial
+      Type: order
     depends_on:
       database:
         condition: service_healthy
@@ -81,7 +81,7 @@ services:
     build: ./app/PubsubApp.Worker
     environment:
       PUBSUB_EMULATOR_HOST: pubsub:8432
-      TopicName: tutorial.public.outbox
+      TopicName: outbox.event.order
       PubsubApiUrl: http://pubsub:8000/api
       GcpProject: test-project
     depends_on:

@@ -1,4 +1,5 @@
 using Google.Cloud.PubSub.V1;
+using System.Text.Json;
 
 namespace PubsubApp.Worker;
 
@@ -29,7 +30,12 @@ public class Worker : BackgroundService
             await subscriber.StartAsync((message, token) => {
                 try
                 {
-                    _logger.LogInformation($"Id {message.MessageId}");
+                    _logger.LogInformation($"Message Id {message.MessageId}");
+                    _logger.LogInformation($"Publish Time {message.PublishTime}");
+                    var attr = JsonSerializer.Serialize(message.Attributes, new JsonSerializerOptions { 
+                        WriteIndented = true
+                    });
+                    _logger.LogInformation($"Attributes {attr}");
                     var decodedMessage = message.Data.ToStringUtf8();
 
                     _logger.LogInformation($"Data {decodedMessage}");
