@@ -2,6 +2,42 @@
 
 Exemplo de debezium com pubsub e postgres para aplicação do [outbox pattern](https://microservices.io/patterns/data/transactional-outbox.html)
 
+```mermaid
+---
+title: Início
+---
+flowchart LR
+    subgraph c [PostgresSQL]
+    A[Schema]-->B[WAL]
+    end
+    subgraph d [Connector]
+    E[Snapshot]
+    end
+    c -- cria Snapshot --> d
+    subgraph g [Kafka]
+    H[Topic]
+    end
+    d -- change event--> g
+```
+
+```mermaid
+---
+title: Fluxo
+---
+flowchart LR
+    subgraph c [PostgresSQL]
+    A[Schema]-->B[WAL]
+    end
+    subgraph d [Connector]
+    E[Output plugin]-->F[Row]
+    end
+    c -- insert,update,delete --> d
+    subgraph g [Kafka]
+    H[Topic]
+    end
+    d -- change event --> g
+```
+
 ## Estrutura
 
 ![Solução com Debezium](desenho.JPG "Solução com Debezium")
@@ -117,3 +153,10 @@ No exemplo, inserimos o valor `order` no campo `type`. Dessa forma, é preciso e
 - [Pubsub sink](https://debezium.io/documentation/reference/2.5/operations/debezium-server.html#_google_cloud_pubsub)
 
 - [Connector](https://debezium.io/documentation/reference/stable/connectors/postgresql.html#postgresql-connector-properties)
+
+
+<!--
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.8.0/dist/mermaid.min.js"></script>
+
+ -->

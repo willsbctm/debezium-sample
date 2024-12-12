@@ -1,0 +1,67 @@
+version: '3.4'
+
+services: 
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.7.0
+    ports:
+      - 23181:23181
+    networks:
+      - network
+    environment:
+      - ZOOKEEPER_SERVER_ID=1
+      - ZOOKEEPER_CLIENT_PORT=23181
+
+  kafka:
+    image: confluentinc/cp-kafka:7.7.0
+    ports:
+      - "20092:20092"
+    environment:
+      - KAFKA_BROKER_ID=1 
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:23181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://127.0.0.1:20092,PLAINTEXT_UI://kafka:20093
+      - KAFKA_LISTENERS=PLAINTEXT://0.0.0.0:20092,PLAINTEXT_UI://kafka:20093
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT,PLAINTEXT_UI:PLAINTEXT
+      - KAFKA_INTER_BROKER_LISTENER_NAME=PLAINTEXT
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1
+    networks:
+      - network
+    depends_on:
+      - zookeeper
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    networks:
+      - network
+    depends_on:
+      - kafka
+      - zookeeper
+    ports:
+      - "8083:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=stone
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:20093
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:23181
+
+  init-kafka:
+    image: confluentinc/cp-kafka:7.7.0
+    depends_on:
+      - kafka
+      - zookeeper
+    networks:
+      - network
+    entrypoint: [ '/bin/sh', '-c' ]
+    command: |
+      "
+      # blocks until kafka is reachable
+      kafka-topics --bootstrap-server kafka:20093 --list
+
+      echo -e 'Creating kafka topics'
+      kafka-topics --bootstrap-server kafka:20093 --create --if-not-exists --topic outbox-topic --replication-factor 1 --partitions 1
+
+      echo -e 'Successfully created the following topics:'
+      kafka-topics --bootstrap-server kafka:20093 --list
+      "
+
+networks:
+  network:
+    driver: bridge
